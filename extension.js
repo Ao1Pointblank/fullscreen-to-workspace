@@ -8,6 +8,9 @@ const range = (n) => Array(n+1).join().split("").map((_,i) => i);
 let _handles, _previousWorkspace, _settings;
 
 function maximize(win) {
+	// idempotency
+	if (_previousWorkspace[win] != undefined)
+		return;
 	// If the current workspace doesn't have any other windows make it maximized here (depending on option).
 	if (_settings.use_cur_ws && win.get_workspace().list_windows().filter(w => !w.is_on_all_workspaces()).length == 1)
 		return;
