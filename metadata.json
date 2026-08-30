@@ -1,12 +1,15 @@
 {
-    "uuid": "fullscreen-to-workspace@mttbernardini",
+    "uuid": "fullscreen-to-workspace@pointblank",
     "cinnamon-version": [
-        "3.2",
-        "3.8",
-        "4.8"
+        "5.4",
+        "6.0",
+        "6.2",
+        "6.4"
     ],
     "dangerous": false,
-    "name": "Fullscreen On New Workspace",
-    "description": "When you launch an application in fullscreen mode move it to a separate workspace.",
-    "url": "https://github.com/mttbernardini/fullscreen-to-workspace"
+    "name": "Fullscreen to Workspace",
+    "description": "When a window enters fullscreen mode, move it to a dedicated workspace named after the application. Exits back when fullscreen is released.",
+    "url": "https://github.com/pointblank/fullscreen-to-workspace",
+    "author": "pointblank",
+    "original_author": "mttbernardini"
 }
