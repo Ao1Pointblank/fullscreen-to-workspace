@@ -8,7 +8,7 @@ const POLL_INTERVAL = 300;
 const DEBOUNCE_MS = 800;
 
 let _handles, _previousWorkspace, _settings, _pollId, _lastFullscreen, _debounce;
-let _wsSettings;
+let _wsSettings, _exclusiveWs;
 
 function setWorkspaceName(index, name) {
 	let names = _wsSettings.get_strv("workspace-names");
@@ -26,9 +26,22 @@ function removeWorkspaceName(index) {
 	}
 }
 
+function isExclusive(ws) {
+	return _exclusiveWs.includes(ws);
+}
+
+function getLastNormalWs() {
+	for (let i = global.screen.n_workspaces - 1; i >= 0; i--) {
+		let ws = global.screen.get_workspace_by_index(i);
+		if (!isExclusive(ws))
+			return ws;
+	}
+	return global.screen.get_workspace_by_index(0);
+}
+
 function bindWorkspace(ws) {
-	let remove_event = ws.connect("window-removed", handleClose);
-	_handles[ws] = [ws, remove_event];
+	_handles[ws + "rem"] = [ws, ws.connect("window-removed", handleClose)];
+	_handles[ws + "add"] = [ws, ws.connect("window-added", handleWindowAdded)];
 }
 
 function maximize(win) {
@@ -40,6 +53,7 @@ function maximize(win) {
 	let target_ws = global.screen.append_new_workspace(false, global.get_current_time());
 	let appName = win.get_wm_class() || win.get_title() || "Workspace";
 	setWorkspaceName(target_ws.index(), appName);
+	_exclusiveWs.push(target_ws);
 	win.change_workspace(target_ws);
 	target_ws.activate(global.get_current_time());
 }
@@ -52,6 +66,7 @@ function unmaximize(win, clean_ws) {
 	if (previous.index() < 0)
 		previous = global.screen.get_workspace_by_index(0);
 	let old_ws = clean_ws || win.get_workspace();
+	_exclusiveWs = _exclusiveWs.filter(w => w !== old_ws);
 	if (!clean_ws)
 		win.change_workspace(previous);
 	previous.activate(global.get_current_time());
@@ -62,6 +77,20 @@ function unmaximize(win, clean_ws) {
 			if (idx >= 0)
 				mainloop.idle_add(() => removeWorkspaceName(idx));
 		}
+	});
+}
+
+function handleWindowAdded(workspace, win) {
+	mainloop.idle_add(() => {
+		if (!isExclusive(workspace))
+			return;
+		if (win.window_type !== Meta.WindowType.NORMAL)
+			return;
+		if (win.is_fullscreen())
+			return;
+		let target = getLastNormalWs();
+		win.change_workspace(target);
+		target.activate(global.get_current_time());
 	});
 }
 
@@ -108,6 +137,13 @@ function poll() {
 	});
 
 	_lastFullscreen = currentFullscreen;
+
+	// Safety: drop exclusive workspaces that no longer have a fullscreen window
+	_exclusiveWs = _exclusiveWs.filter(ws => {
+		if (ws.index() < 0) return false;
+		return ws.list_windows().some(w => w.is_fullscreen() && w.window_type === Meta.WindowType.NORMAL);
+	});
+
 	return true;
 }
 
@@ -130,6 +166,7 @@ function init(extensionMeta) {
 	_previousWorkspace = {};
 	_lastFullscreen = {};
 	_debounce = {};
+	_exclusiveWs = [];
 	_settings = new SettingsHandler(extensionMeta.uuid);
 	_wsSettings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.wm.preferences" });
 }
@@ -164,4 +201,5 @@ function disable() {
 	_handles = {};
 	_lastFullscreen = {};
 	_debounce = {};
-}
+	_exclusiveWs = [];
+}   
