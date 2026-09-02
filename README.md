@@ -1,3 +1,7 @@
+# ⚠️ Better version here: [exclusive-fullscreen@pointlbank](https://github.com/Ao1Pointblank/exclusive-fullscreen)
+
+
+
 Cinnamon Extension - Fullscreen to Workspace
 
 Fork of [mttbernardini/fullscreen-to-workspace](https://github.com/mttbernardini/fullscreen-to-workspace) extension, updated jankily to work on modern Cinnamon DE (tested on 6.6.9)
