@@ -1,4 +1,4 @@
-# ⚠️ Better version here: [exclusive-fullscreen@pointlbank](https://github.com/Ao1Pointblank/exclusive-fullscreen)
+# ⚠️ Better version here: [exclusive-fullscreen@pointblank](https://github.com/Ao1Pointblank/exclusive-fullscreen)
 
 
 
